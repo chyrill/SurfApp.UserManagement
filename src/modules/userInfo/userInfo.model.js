@@ -37,7 +37,7 @@ const UserInfoSchema = new Schema({
         required: [true, 'Email is required'],
         validate: {
             validator(email) {
-
+                return validator.isEmail(email);
             },
             message: '{VALUE} is not valid email'
         }

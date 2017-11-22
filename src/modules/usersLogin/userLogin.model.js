@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import validator from 'validator';
+import { hashSync } from 'bcrypt-nodejs';
 
 const UserLoginSchema = new Schema({
     UserInfo_Id: {
@@ -30,5 +31,19 @@ const UserLoginSchema = new Schema({
     }
 
 });
+
+UserLoginSchema.pre('save', function(next) {
+    if (this.isModified('Password')) {
+        this.Password = this._hashPassword(this.Password);
+    }
+
+    return next();
+});
+
+UserLoginSchema.methods = {
+    _hashPassword(password) {
+        return hashSync(password);
+    }
+};
 
 export default mongoose.model('UserLogin', UserLoginSchema);

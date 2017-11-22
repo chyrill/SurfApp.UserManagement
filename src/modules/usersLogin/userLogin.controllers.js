@@ -44,11 +44,18 @@ export async function signUp(req, res) {
         response.successful = true;
         response.message = "User is Created Successfully";
         return res.status(201).json(response);
+
     } catch (e) {
         console.log(e);
+
+        if (e.errmsg != null) {
+            response.message = e.errmsg;
+        } else {
+            response.message = e.message;
+        }
+
         response.model = (req.body);
         response.successful = false;
-        response.message = e.errmsg;
         return res.status(500).json(response);
     }
 }
