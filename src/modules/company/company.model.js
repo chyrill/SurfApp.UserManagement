@@ -24,5 +24,14 @@ const CompanyDataSchema = new Schema({
     },
     ZipCode: {
         type: String
+    },
+    Context: {
+        type: String
+    },
+    AppContext: {
+        type: [String]
     }
 });
+
+
+export default mongoose.model('CompanyData', CompanyDataSchema);
