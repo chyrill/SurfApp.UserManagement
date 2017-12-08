@@ -50,6 +50,9 @@ const UserInfoSchema = new Schema({
     DateCreated: {
         type: Date
     },
+    OtherInfo:{
+      type: Object
+    },
     DateUpdated: {
         type: Date
     }
