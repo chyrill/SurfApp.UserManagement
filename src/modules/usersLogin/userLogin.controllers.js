@@ -1,6 +1,7 @@
 import UserLogin from './userLogin.model';
 import UserInfo from '../userInfo/userInfo.model';
 import Result from '../../helpers/result';
+import {Mapper} from '../../helpers/mapper';
 
 export async function signUp(req, res) {
     var response = new Result();
@@ -16,19 +17,10 @@ export async function signUp(req, res) {
         }
 
 
-        var userInfoData = {
-            LastName: req.body.LastName,
-            FirstName: req.body.FirstName,
-            MiddleName: req.body.MiddleName,
-            Address1: req.body.Address1,
-            Address2: req.body.Address2,
-            City: req.body.City,
-            State: req.body.State,
-            Country: req.body.Country,
-            Email: req.body.Email,
-            PhoneNumber: req.body.PhoneNumber,
-            DateCreated: new Date()
-        };
+        var userInfoData = Mapper(UserInfo.schema.paths,req.body);
+
+        userInfoData.DateCreated = Date.now();
+        console.log(userInfoData);
 
         const userInfoCreateRes = await UserInfo.create(userInfoData);
 

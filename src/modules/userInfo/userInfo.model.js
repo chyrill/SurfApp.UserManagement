@@ -50,6 +50,9 @@ const UserInfoSchema = new Schema({
     DateCreated: {
         type: Date
     },
+    Context:{
+      type: String,
+    },
     OtherInfo:{
       type: Object
     },
