@@ -361,7 +361,7 @@ async function signUp(req, res) {
 
                 var userInfoData = (0, _mapper.Mapper)(_userInfo2.default.schema.paths, req.body);
 
-                userInfoData.DateCreated = Date.now();
+                userInfoData.DateCreated = new Date();
                 console.log(userInfoData);
 
                 const userInfoCreateRes = await _userInfo2.default.create(userInfoData);

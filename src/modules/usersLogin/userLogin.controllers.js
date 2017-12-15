@@ -19,7 +19,7 @@ export async function signUp(req, res) {
 
         var userInfoData = Mapper(UserInfo.schema.paths,req.body);
 
-        userInfoData.DateCreated = Date.now();
+        userInfoData.DateCreated = new Date();
         console.log(userInfoData);
 
         const userInfoCreateRes = await UserInfo.create(userInfoData);
