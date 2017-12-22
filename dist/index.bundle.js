@@ -280,7 +280,7 @@ module.exports = require("helmet");
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 
 var _userLogin = __webpack_require__(12);
@@ -290,7 +290,12 @@ var _userLogin2 = _interopRequireDefault(_userLogin);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = app => {
-    app.use('/api/v1/userLogin', _userLogin2.default);
+  app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+  app.use('/api/v1/userLogin', _userLogin2.default);
 };
 
 /***/ }),
@@ -348,6 +353,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 async function signUp(req, res) {
         var response = new _result2.default();
+        req.body = req.body.body;
         try {
 
                 const usersInfo = await _userInfo2.default.find({ $or: [{ FirstName: req.body.FirstName, LastName: req.body.LastName }, { Email: req.body.Email }] });
@@ -356,13 +362,13 @@ async function signUp(req, res) {
                         response.successful = false;
                         response.model = req.body;
                         response.message = "User is already exist";
+                        console.log(response);
                         return res.status(400).json(response);
                 }
 
                 var userInfoData = (0, _mapper.Mapper)(_userInfo2.default.schema.paths, req.body);
 
                 userInfoData.DateCreated = new Date();
-                console.log(userInfoData);
 
                 const userInfoCreateRes = await _userInfo2.default.create(userInfoData);
 
@@ -370,7 +376,7 @@ async function signUp(req, res) {
                         Email: req.body.Email,
                         Password: req.body.Password,
                         UserInfo_Id: userInfoCreateRes.id,
-                        Context: "dsadsadsadasdsa"
+                        Context: req.Context
                 };
 
                 const userLogin = await _userLogin2.default.create(userLoginData);
@@ -389,6 +395,7 @@ async function signUp(req, res) {
 
                 response.model = req.body;
                 response.successful = false;
+                console.log(response);
                 return res.status(500).json(response);
         }
 }
@@ -541,7 +548,7 @@ const UserInfoSchema = new _mongoose.Schema({
     Context: {
         type: String
     },
-    OtherInfo: {
+    Others: {
         type: Object
     },
     DateUpdated: {

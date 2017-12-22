@@ -53,7 +53,7 @@ const UserInfoSchema = new Schema({
     Context:{
       type: String,
     },
-    OtherInfo:{
+    Others:{
       type: Object
     },
     DateUpdated: {

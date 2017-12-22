@@ -5,6 +5,7 @@ import {Mapper} from '../../helpers/mapper';
 
 export async function signUp(req, res) {
     var response = new Result();
+    req.body = req.body.body;
     try {
 
         const usersInfo = await UserInfo.find({ $or: [{ FirstName: req.body.FirstName, LastName: req.body.LastName }, { Email: req.body.Email }] });
@@ -13,14 +14,14 @@ export async function signUp(req, res) {
             response.successful = false;
             response.model = req.body;
             response.message = "User is already exist";
+            console.log(response);
             return res.status(400).json(response);
         }
 
 
         var userInfoData = Mapper(UserInfo.schema.paths,req.body);
-
+        
         userInfoData.DateCreated = new Date();
-        console.log(userInfoData);
 
         const userInfoCreateRes = await UserInfo.create(userInfoData);
 
@@ -28,7 +29,7 @@ export async function signUp(req, res) {
             Email: req.body.Email,
             Password: req.body.Password,
             UserInfo_Id: userInfoCreateRes.id,
-            Context: "dsadsadsadasdsa"
+            Context: req.Context
         };
 
         const userLogin = await UserLogin.create(userLoginData);
@@ -48,6 +49,7 @@ export async function signUp(req, res) {
 
         response.model = (req.body);
         response.successful = false;
+        console.log(response);
         return res.status(500).json(response);
     }
 }
