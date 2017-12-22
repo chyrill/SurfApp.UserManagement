@@ -20,7 +20,7 @@ export async function signUp(req, res) {
 
 
         var userInfoData = Mapper(UserInfo.schema.paths,req.body);
-        
+
         userInfoData.DateCreated = new Date();
 
         const userInfoCreateRes = await UserInfo.create(userInfoData);
@@ -29,7 +29,7 @@ export async function signUp(req, res) {
             Email: req.body.Email,
             Password: req.body.Password,
             UserInfo_Id: userInfoCreateRes.id,
-            Context: req.Context
+            Context: req.body.Context
         };
 
         const userLogin = await UserLogin.create(userLoginData);

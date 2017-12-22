@@ -376,7 +376,7 @@ async function signUp(req, res) {
                         Email: req.body.Email,
                         Password: req.body.Password,
                         UserInfo_Id: userInfoCreateRes.id,
-                        Context: req.Context
+                        Context: req.body.Context
                 };
 
                 const userLogin = await _userLogin2.default.create(userLoginData);
