@@ -16,8 +16,11 @@
     "compression": "^1.7.1",
     "cross-env": "^5.1.1",
     "express": "^4.16.2",
+    "guid": "0.0.12",
     "helmet": "^3.9.0",
+    "jsonwebtoken": "^8.1.0",
     "mongoose": "^4.13.4",
+    "uuid-lib": "0.0.6",
     "validator": "^9.1.1"
   },
   "devDependencies": {

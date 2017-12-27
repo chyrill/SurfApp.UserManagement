@@ -26,8 +26,20 @@ const UserLoginSchema = new Schema({
         trim: true,
         minLength: [6, 'Password minimum length is 6!']
     },
+    AccessLevel: {
+      type: Number
+    },
     Context: {
         type: String
+    },
+    AuthCode: {
+      type: String
+    },
+    ExpirationDate: {
+      type: Date
+    },
+    DateCreated: {
+      type: Date
     }
 
 });
@@ -35,6 +47,7 @@ const UserLoginSchema = new Schema({
 UserLoginSchema.pre('save', function(next) {
     if (this.isModified('Password')) {
         this.Password = this._hashPassword(this.Password);
+        this.DateCreated = new Date();
     }
 
     return next();

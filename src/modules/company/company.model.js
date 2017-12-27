@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import validator from 'validator';
+import Uuid from 'uuid-lib';
 
 const CompanyDataSchema = new Schema({
     Name: {
@@ -25,11 +26,18 @@ const CompanyDataSchema = new Schema({
     ZipCode: {
         type: String
     },
-    Context: {
+    Secretkey:{
         type: String
     },
     AppContext: {
         type: [String]
+    },
+    PhoneNumber: {
+      type: [String]
+    },
+    DateCreated: {
+      type: Date,
+      default: new Date()
     }
 });
 

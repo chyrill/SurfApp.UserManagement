@@ -13,6 +13,9 @@ const UserInfoSchema = new Schema({
     MiddleName: {
         type: String
     },
+    ProfileImage: {
+      type: String
+    },
     Address1: {
         type: String,
         required: [true, 'Address 1 is required']
