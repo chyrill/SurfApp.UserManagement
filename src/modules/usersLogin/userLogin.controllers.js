@@ -34,6 +34,7 @@ export async function signUp(req, res) {
             UserInfo_Id: userInfoCreateRes.id,
             Context: req.body.Context,
             AuthCode: Uuid.create(),
+            AccessLevel: req.body.AccessLevel,
             ExpirationDate: new Date().getTime() + 30*60000
         };
 
