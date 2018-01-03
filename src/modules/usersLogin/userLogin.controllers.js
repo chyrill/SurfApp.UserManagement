@@ -41,7 +41,7 @@ export async function signUp(req, res) {
         const userLogin = await UserLogin.create(userLoginData);
         const user = {
           Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
-          ProfileImage : userInfoCreateRes.ProfileImage,
+          ProfilePicture : userInfoCreateRes.ProfilePicture,
           AuthCode: userLogin.AuthCode,
           AccessLevel: userLogin.AccessLevel,
           Others: userInfoCreateRes.Others

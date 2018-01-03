@@ -504,7 +504,7 @@ async function signUp(req, res) {
             const userLogin = await _userLogin2.default.create(userLoginData);
             const user = {
                   Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
-                  ProfileImage: userInfoCreateRes.ProfileImage,
+                  ProfilePicture: userInfoCreateRes.ProfilePicture,
                   AuthCode: userLogin.AuthCode,
                   AccessLevel: userLogin.AccessLevel,
                   Others: userInfoCreateRes.Others
@@ -749,7 +749,7 @@ const UserInfoSchema = new _mongoose.Schema({
     MiddleName: {
         type: String
     },
-    ProfileImage: {
+    ProfilePicture: {
         type: String
     },
     Address1: {

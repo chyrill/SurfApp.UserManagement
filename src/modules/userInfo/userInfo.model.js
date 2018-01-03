@@ -13,7 +13,7 @@ const UserInfoSchema = new Schema({
     MiddleName: {
         type: String
     },
-    ProfileImage: {
+    ProfilePicture: {
       type: String
     },
     Address1: {
