@@ -587,9 +587,16 @@ async function logIn(req, res) {
       var response = new _result2.default();
 
       try {
-            const user = await _userLogin2.default.findOne({ Email: req.body.Email, Context: req.body.Context });
+            const userdata = await _userLogin2.default.findOne({ Email: req.body.Email, Context: req.body.Context });
 
-            var ifTrue = (0, _bcryptNodejs.compareSync)(req.body.Password, user.Password);
+            if (userdata === null) {
+                  response.model = req.body;
+                  reponse.message = "Email or Password is incorrect";
+                  reponse.successful = false;
+                  return res.status(401).json(response);
+            }
+
+            var ifTrue = (0, _bcryptNodejs.compareSync)(req.body.Password, userdata.Password);
 
             if (!ifTrue) {
                   response.model = req.body;
@@ -598,26 +605,26 @@ async function logIn(req, res) {
                   return res.status(401).json(response);
             }
 
-            user.AuthCode = _uuidLib2.default.create();
-            user.ExpirationDate = new Date().getTime() + 30 * 60000;
+            userdata.AuthCode = _uuidLib2.default.create();
+            userdata.ExpirationDate = new Date().getTime() + 30 * 60000;
 
-            console.log(user);
+            console.log(userdata);
 
-            await _userLogin2.default.findOneAndUpdate(user._id, user, { upsert: true, strict: false });
+            await _userLogin2.default.findOneAndUpdate({ _id: userdata._id }, userdata, { upsert: true, strict: false });
 
-            var userInfoRes = await _userInfo2.default.findOne({ Email: user.Email, Context: req.body.Context });
+            var userInfoRes = await _userInfo2.default.findOne({ Email: userdata.Email, Context: req.body.Context });
 
-            const userdata = {
+            const user = {
                   Name: userInfoRes.LastName + ", " + userInfoRes.FirstName,
                   ProfileImage: userInfoRes.ProfileImage,
                   Others: userInfoRes.Others,
-                  AccessLevel: user.AccessLevel,
-                  AuthCode: user.AuthCode
+                  AccessLevel: userdata.AccessLevel,
+                  AuthCode: userdata.AuthCode
             };
 
             const companyres = await _company2.default.findOne({ _id: req.body.Context });
 
-            var token = _jsonwebtoken2.default.sign({ userdata }, companyres.Secretkey);
+            var token = _jsonwebtoken2.default.sign({ user }, companyres.Secretkey);
 
             response.model = { Token: token };
             response.message = "Successfully Log in";
@@ -627,7 +634,7 @@ async function logIn(req, res) {
       } catch (e) {
             console.log(e);
             response.model = req.body;
-            response.message = e.errmsg;
+            response.message = e.errmsg || 'Email or Password is incorrect';
             response.successful = false;
 
             return res.status(500).json(response);
