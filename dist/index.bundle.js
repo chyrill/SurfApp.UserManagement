@@ -436,11 +436,195 @@ exports.default = routes;
 
 
 Object.defineProperty(exports, "__esModule", {
-      value: true
+        value: true
 });
-exports.signUp = signUp;
-exports.authorize = authorize;
-exports.logIn = logIn;
+exports.logIn = exports.authorize = exports.signUp = undefined;
+
+let signUp = exports.signUp = (() => {
+        var _ref = _asyncToGenerator(function* (req, res) {
+                var response = new _result2.default();
+                try {
+
+                        const usersInfo = yield _userInfo2.default.find({ $or: [{ FirstName: req.body.FirstName, LastName: req.body.LastName, Context: req.body.Context }, { Email: req.body.Email, Context: req.body.Context }] });
+
+                        if (usersInfo.length > 0) {
+                                response.successful = false;
+                                response.model = req.body;
+                                response.message = "User is already exist";
+                                return res.status(400).json(response);
+                        }
+
+                        var userInfoData = (0, _mapper.Mapper)(_userInfo2.default.schema.paths, req.body);
+
+                        userInfoData.DateCreated = new Date();
+
+                        const userInfoCreateRes = yield _userInfo2.default.create(userInfoData);
+
+                        var userLoginData = {
+                                Email: req.body.Email,
+                                Password: req.body.Password,
+                                UserInfo_Id: userInfoCreateRes.id,
+                                Context: req.body.Context,
+                                AuthCode: _uuidLib2.default.create(),
+                                AccessLevel: req.body.AccessLevel,
+                                ExpirationDate: new Date().getTime() + 30 * 60000
+                        };
+
+                        const userLogin = yield _userLogin2.default.create(userLoginData);
+                        const user = {
+                                Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
+                                ProfilePicture: userInfoCreateRes.ProfilePicture,
+                                AuthCode: userLogin.AuthCode,
+                                AccessLevel: userLogin.AccessLevel,
+                                Others: userInfoCreateRes.Others
+                        };
+
+                        const companyInfo = yield _company2.default.findOne({ _id: req.body.Context });
+
+                        const token = _jsonwebtoken2.default.sign({ user }, companyInfo.Secretkey);
+
+                        response.model = { Token: token };
+                        response.successful = true;
+                        response.message = "User is Created Successfully";
+                        return res.status(201).json(response);
+                } catch (e) {
+                        console.log(e);
+
+                        if (e.errmsg != null) {
+                                response.message = e.errmsg;
+                        } else {
+                                response.message = e.message;
+                        }
+
+                        response.model = req.body;
+                        response.successful = false;
+                        console.log(response);
+                        return res.status(500).json(response);
+                }
+        });
+
+        return function signUp(_x, _x2) {
+                return _ref.apply(this, arguments);
+        };
+})();
+
+let authorize = exports.authorize = (() => {
+        var _ref2 = _asyncToGenerator(function* (req, res) {
+                var response = new _result2.default();
+
+                try {
+
+                        var userLoginRes = yield _userLogin2.default.findOne({ AuthCode: req.body.Authorization });
+
+                        if (userLoginRes === null) {
+                                response.model = req.body;
+                                response.message = "AuthCode is not valid";
+                                response.successful = false;
+
+                                return res.status(401).json(response);
+                        }
+                        console.log(new Date());
+
+                        if (userLoginRes.ExpirationDate < new Date()) {
+                                response.model = req.body;
+                                response.message = "AuthCode is expired";
+                                response.successful = false;
+
+                                return res.status(401).json(response);
+                        }
+                        var userRes = yield _userInfo2.default.findOne({ Email: userLoginRes.Email, Context: userLoginRes.Context });
+                        console.log(userLoginRes);
+                        userLoginRes.ExpirationDate = new Date().getTime() + 30 * 60000;
+
+                        yield _userLogin2.default.findOneAndUpdate({ _id: userLoginRes._id }, userLoginRes, { upsert: true, strict: false });
+
+                        var user = {
+                                Name: userRes.LastName + ", " + userRes.FirstName,
+                                Context: userLoginRes.Context
+                        };
+
+                        response.model = user;
+                        response.message = "AuthCode verified";
+                        response.successful = true;
+
+                        return res.status(200).json(response);
+                } catch (e) {
+                        response.model = req.body;
+                        response.message = e;
+                        response.successful = false;
+
+                        return res.status(500).json(response);
+                }
+        });
+
+        return function authorize(_x3, _x4) {
+                return _ref2.apply(this, arguments);
+        };
+})();
+
+let logIn = exports.logIn = (() => {
+        var _ref3 = _asyncToGenerator(function* (req, res) {
+                var response = new _result2.default();
+
+                try {
+                        const userdata = yield _userLogin2.default.findOne({ Email: req.body.Email, Context: req.body.Context });
+
+                        if (userdata === null) {
+                                response.model = req.body;
+                                reponse.message = "Email or Password is incorrect";
+                                reponse.successful = false;
+                                return res.status(401).json(response);
+                        }
+
+                        var ifTrue = (0, _bcryptNodejs.compareSync)(req.body.Password, userdata.Password);
+
+                        if (!ifTrue) {
+                                response.model = req.body;
+                                reponse.message = "Email or Password is incorrect";
+                                reponse.successful = false;
+                                return res.status(401).json(response);
+                        }
+
+                        userdata.AuthCode = _uuidLib2.default.create();
+                        userdata.ExpirationDate = new Date().getTime() + 30 * 60000;
+
+                        console.log(userdata);
+
+                        yield _userLogin2.default.findOneAndUpdate({ _id: userdata._id }, userdata, { upsert: true, strict: false });
+
+                        var userInfoRes = yield _userInfo2.default.findOne({ Email: userdata.Email, Context: req.body.Context });
+
+                        const user = {
+                                Name: userInfoRes.LastName + ", " + userInfoRes.FirstName,
+                                ProfileImage: userInfoRes.ProfileImage,
+                                Others: userInfoRes.Others,
+                                AccessLevel: userdata.AccessLevel,
+                                AuthCode: userdata.AuthCode
+                        };
+
+                        const companyres = yield _company2.default.findOne({ _id: req.body.Context });
+
+                        var token = _jsonwebtoken2.default.sign({ user }, companyres.Secretkey);
+
+                        response.model = { Token: token };
+                        response.message = "Successfully Log in";
+                        response.successful = true;
+
+                        return res.status(200).json(response);
+                } catch (e) {
+                        console.log(e);
+                        response.model = req.body;
+                        response.message = e.errmsg || 'Email or Password is incorrect';
+                        response.successful = false;
+
+                        return res.status(500).json(response);
+                }
+        });
+
+        return function logIn(_x5, _x6) {
+                return _ref3.apply(this, arguments);
+        };
+})();
 
 var _userLogin = __webpack_require__(18);
 
@@ -472,174 +656,7 @@ var _company2 = _interopRequireDefault(_company);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-async function signUp(req, res) {
-      var response = new _result2.default();
-      try {
-
-            const usersInfo = await _userInfo2.default.find({ $or: [{ FirstName: req.body.FirstName, LastName: req.body.LastName, Context: req.body.Context }, { Email: req.body.Email, Context: req.body.Context }] });
-
-            if (usersInfo.length > 0) {
-                  response.successful = false;
-                  response.model = req.body;
-                  response.message = "User is already exist";
-                  return res.status(400).json(response);
-            }
-
-            var userInfoData = (0, _mapper.Mapper)(_userInfo2.default.schema.paths, req.body);
-
-            userInfoData.DateCreated = new Date();
-
-            const userInfoCreateRes = await _userInfo2.default.create(userInfoData);
-
-            var userLoginData = {
-                  Email: req.body.Email,
-                  Password: req.body.Password,
-                  UserInfo_Id: userInfoCreateRes.id,
-                  Context: req.body.Context,
-                  AuthCode: _uuidLib2.default.create(),
-                  AccessLevel: req.body.AccessLevel,
-                  ExpirationDate: new Date().getTime() + 30 * 60000
-            };
-
-            const userLogin = await _userLogin2.default.create(userLoginData);
-            const user = {
-                  Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
-                  ProfilePicture: userInfoCreateRes.ProfilePicture,
-                  AuthCode: userLogin.AuthCode,
-                  AccessLevel: userLogin.AccessLevel,
-                  Others: userInfoCreateRes.Others
-            };
-
-            const companyInfo = await _company2.default.findOne({ _id: req.body.Context });
-
-            const token = _jsonwebtoken2.default.sign({ user }, companyInfo.Secretkey);
-
-            response.model = { Token: token };
-            response.successful = true;
-            response.message = "User is Created Successfully";
-            return res.status(201).json(response);
-      } catch (e) {
-            console.log(e);
-
-            if (e.errmsg != null) {
-                  response.message = e.errmsg;
-            } else {
-                  response.message = e.message;
-            }
-
-            response.model = req.body;
-            response.successful = false;
-            console.log(response);
-            return res.status(500).json(response);
-      }
-}
-
-async function authorize(req, res) {
-      var response = new _result2.default();
-
-      try {
-            console.log(req.body.Authorization);
-
-            var userLoginRes = await _userLogin2.default.findOne({ AuthCode: req.body.Authorization });
-
-            if (userLoginRes === null) {
-                  response.model = req.body;
-                  response.message = "AuthCode is not valid";
-                  response.successful = false;
-
-                  return res.status(401).json(response);
-            }
-            console.log(new Date());
-
-            if (userLoginRes.ExpirationDate < new Date()) {
-                  response.model = req.body;
-                  response.message = "AuthCode is expired";
-                  response.successful = false;
-
-                  return res.status(401).json(response);
-            }
-            var userRes = await _userInfo2.default.findOne({ Email: userLoginRes.Email, Context: userLoginRes.Context });
-
-            userLoginRes.ExpirationDate = new Date().getTime() + 30 * 60000;
-
-            await _userLogin2.default.findOneAndUpdate(userLoginRes._id, userLoginRes, { upsert: true, strict: false });
-
-            var user = {
-                  Name: userRes.LastName + ", " + userRes.FirstName,
-                  Context: userLoginRes.Context
-            };
-
-            response.model = user;
-            response.message = "AuthCode verified";
-            response.successful = true;
-
-            return res.status(200).json(response);
-      } catch (e) {
-            response.model = req.body;
-            response.message = e;
-            response.successful = false;
-
-            return res.status(500).json(response);
-      }
-}
-
-async function logIn(req, res) {
-      var response = new _result2.default();
-
-      try {
-            const userdata = await _userLogin2.default.findOne({ Email: req.body.Email, Context: req.body.Context });
-
-            if (userdata === null) {
-                  response.model = req.body;
-                  reponse.message = "Email or Password is incorrect";
-                  reponse.successful = false;
-                  return res.status(401).json(response);
-            }
-
-            var ifTrue = (0, _bcryptNodejs.compareSync)(req.body.Password, userdata.Password);
-
-            if (!ifTrue) {
-                  response.model = req.body;
-                  reponse.message = "Email or Password is incorrect";
-                  reponse.successful = false;
-                  return res.status(401).json(response);
-            }
-
-            userdata.AuthCode = _uuidLib2.default.create();
-            userdata.ExpirationDate = new Date().getTime() + 30 * 60000;
-
-            console.log(userdata);
-
-            await _userLogin2.default.findOneAndUpdate({ _id: userdata._id }, userdata, { upsert: true, strict: false });
-
-            var userInfoRes = await _userInfo2.default.findOne({ Email: userdata.Email, Context: req.body.Context });
-
-            const user = {
-                  Name: userInfoRes.LastName + ", " + userInfoRes.FirstName,
-                  ProfileImage: userInfoRes.ProfileImage,
-                  Others: userInfoRes.Others,
-                  AccessLevel: userdata.AccessLevel,
-                  AuthCode: userdata.AuthCode
-            };
-
-            const companyres = await _company2.default.findOne({ _id: req.body.Context });
-
-            var token = _jsonwebtoken2.default.sign({ user }, companyres.Secretkey);
-
-            response.model = { Token: token };
-            response.message = "Successfully Log in";
-            response.successful = true;
-
-            return res.status(200).json(response);
-      } catch (e) {
-            console.log(e);
-            response.model = req.body;
-            response.message = e.errmsg || 'Email or Password is incorrect';
-            response.successful = false;
-
-            return res.status(500).json(response);
-      }
-}
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 /***/ }),
 /* 18 */
@@ -876,7 +893,45 @@ exports.default = routes;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.create = create;
+exports.create = undefined;
+
+let create = exports.create = (() => {
+    var _ref = _asyncToGenerator(function* (req, res) {
+
+        var response = new _result2.default();
+
+        try {
+
+            var companyValidRes = yield _company2.default.find({ Name: req.body.Name });
+
+            if (companyValidRes.length > 1) {
+                response.model = req.body;
+                response.message = "Company already exist";
+                response.successful = false;
+                return res.status(400).json(response);
+            }
+
+            var result = yield _company2.default.create(req.body);
+
+            response.model = result;
+            response.message = "Successfully created a company data";
+            response.successful = true;
+
+            return res.status(201).json(response);
+        } catch (e) {
+
+            response.message = e.errmsg;
+            response.successful = false;
+            response.model = req.body;
+
+            return res.status(500).json(response);
+        }
+    });
+
+    return function create(_x, _x2) {
+        return _ref.apply(this, arguments);
+    };
+})();
 
 var _result = __webpack_require__(5);
 
@@ -888,37 +943,7 @@ var _company2 = _interopRequireDefault(_company);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-async function create(req, res) {
-
-    var response = new _result2.default();
-
-    try {
-
-        var companyValidRes = await _company2.default.find({ Name: req.body.Name });
-
-        if (companyValidRes.length > 1) {
-            response.model = req.body;
-            response.message = "Company already exist";
-            response.successful = false;
-            return res.status(400).json(response);
-        }
-
-        var result = await _company2.default.create(req.body);
-
-        response.model = result;
-        response.message = "Successfully created a company data";
-        response.successful = true;
-
-        return res.status(201).json(response);
-    } catch (e) {
-
-        response.message = e.errmsg;
-        response.successful = false;
-        response.model = req.body;
-
-        return res.status(500).json(response);
-    }
-}
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 /***/ })
 /******/ ]);
