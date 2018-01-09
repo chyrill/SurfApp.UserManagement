@@ -26,18 +26,18 @@ const CompanyDataSchema = new Schema({
     ZipCode: {
         type: String
     },
-    Secretkey:{
+    Secretkey: {
         type: String
     },
     AppContext: {
         type: [String]
     },
     PhoneNumber: {
-      type: [String]
+        type: [String]
     },
     DateCreated: {
-      type: Date,
-      default: new Date()
+        type: Date,
+        default: new Date()
     }
 });
 

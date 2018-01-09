@@ -41,6 +41,7 @@ export async function signUp(req, res) {
         const userLogin = await UserLogin.create(userLoginData);
         const user = {
             Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
+            UserId: userInfoCreateRes._id,
             ProfilePicture: userInfoCreateRes.ProfilePicture,
             AuthCode: userLogin.AuthCode,
             AccessLevel: userLogin.AccessLevel,
@@ -48,7 +49,6 @@ export async function signUp(req, res) {
         };
 
         const companyInfo = await CompanyData.findOne({ _id: req.body.Context });
-
         const token = jwt.sign({ user }, companyInfo.Secretkey);
 
         response.model = { Token: token };
@@ -153,6 +153,7 @@ export async function logIn(req, res) {
 
         const user = {
             Name: userInfoRes.LastName + ", " + userInfoRes.FirstName,
+            UserId: userInfoRes._id,
             ProfileImage: userInfoRes.ProfileImage,
             Others: userInfoRes.Others,
             AccessLevel: userdata.AccessLevel,

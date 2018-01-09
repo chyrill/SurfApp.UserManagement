@@ -378,7 +378,7 @@ module.exports = require("helmet");
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 
 var _userLogin = __webpack_require__(16);
@@ -392,13 +392,14 @@ var _company2 = _interopRequireDefault(_company);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = app => {
-  app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-  });
-  app.use('/api/v1/userLogin', _userLogin2.default);
-  app.use('/api/v1/company', _company2.default);
+    app.use(function (req, res, next) {
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+        res.header("Access-Control-Allow-Methods", "*");
+        next();
+    });
+    app.use('/api/v1/userLogin', _userLogin2.default);
+    app.use('/api/v1/company', _company2.default);
 };
 
 /***/ }),
@@ -473,6 +474,7 @@ let signUp = exports.signUp = (() => {
                         const userLogin = yield _userLogin2.default.create(userLoginData);
                         const user = {
                                 Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
+                                UserId: userInfoCreateRes._id,
                                 ProfilePicture: userInfoCreateRes.ProfilePicture,
                                 AuthCode: userLogin.AuthCode,
                                 AccessLevel: userLogin.AccessLevel,
@@ -480,7 +482,6 @@ let signUp = exports.signUp = (() => {
                         };
 
                         const companyInfo = yield _company2.default.findOne({ _id: req.body.Context });
-
                         const token = _jsonwebtoken2.default.sign({ user }, companyInfo.Secretkey);
 
                         response.model = { Token: token };
@@ -596,6 +597,7 @@ let logIn = exports.logIn = (() => {
 
                         const user = {
                                 Name: userInfoRes.LastName + ", " + userInfoRes.FirstName,
+                                UserId: userInfoRes._id,
                                 ProfileImage: userInfoRes.ProfileImage,
                                 Others: userInfoRes.Others,
                                 AccessLevel: userdata.AccessLevel,
@@ -891,46 +893,46 @@ exports.default = routes;
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+        value: true
 });
 exports.create = undefined;
 
 let create = exports.create = (() => {
-    var _ref = _asyncToGenerator(function* (req, res) {
+        var _ref = _asyncToGenerator(function* (req, res) {
 
-        var response = new _result2.default();
+                var response = new _result2.default();
 
-        try {
+                try {
 
-            var companyValidRes = yield _company2.default.find({ Name: req.body.Name });
+                        var companyValidRes = yield _company2.default.find({ Name: req.body.Name });
 
-            if (companyValidRes.length > 1) {
-                response.model = req.body;
-                response.message = "Company already exist";
-                response.successful = false;
-                return res.status(400).json(response);
-            }
+                        if (companyValidRes.length > 1) {
+                                response.model = req.body;
+                                response.message = "Company already exist";
+                                response.successful = false;
+                                return res.status(400).json(response);
+                        }
 
-            var result = yield _company2.default.create(req.body);
+                        var result = yield _company2.default.create(req.body);
 
-            response.model = result;
-            response.message = "Successfully created a company data";
-            response.successful = true;
+                        response.model = result;
+                        response.message = "Successfully created a company data";
+                        response.successful = true;
 
-            return res.status(201).json(response);
-        } catch (e) {
+                        return res.status(201).json(response);
+                } catch (e) {
 
-            response.message = e.errmsg;
-            response.successful = false;
-            response.model = req.body;
+                        response.message = e.errmsg;
+                        response.successful = false;
+                        response.model = req.body;
 
-            return res.status(500).json(response);
-        }
-    });
+                        return res.status(500).json(response);
+                }
+        });
 
-    return function create(_x, _x2) {
-        return _ref.apply(this, arguments);
-    };
+        return function create(_x, _x2) {
+                return _ref.apply(this, arguments);
+        };
 })();
 
 var _result = __webpack_require__(5);
