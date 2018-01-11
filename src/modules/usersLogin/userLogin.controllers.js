@@ -154,12 +154,12 @@ export async function logIn(req, res) {
         const user = {
             Name: userInfoRes.LastName + ", " + userInfoRes.FirstName,
             UserId: userInfoRes._id,
-            ProfileImage: userInfoRes.ProfileImage,
+            ProfileImage: userInfoRes.ProfilePicture,
             Others: userInfoRes.Others,
             AccessLevel: userdata.AccessLevel,
             AuthCode: userdata.AuthCode
         };
-
+        console.log(user);
         const companyres = await CompanyData.findOne({ _id: req.body.Context });
 
         var token = jwt.sign({ user }, companyres.Secretkey);
