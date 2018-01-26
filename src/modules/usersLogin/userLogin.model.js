@@ -38,6 +38,10 @@ const UserLoginSchema = new Schema({
     ExpirationDate: {
       type: Date
     },
+    EmailConfirmation: {
+        type: Boolean,
+        default: false
+    },
     DateCreated: {
       type: Date
     }

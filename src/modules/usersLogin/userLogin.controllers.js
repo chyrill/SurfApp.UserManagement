@@ -45,7 +45,8 @@ export async function signUp(req, res) {
             ProfilePicture: userInfoCreateRes.ProfilePicture,
             AuthCode: userLogin.AuthCode,
             AccessLevel: userLogin.AccessLevel,
-            Others: userInfoCreateRes.Others
+            Others: userInfoCreateRes.Others,
+            ConfirmEmail: false
         };
 
         const companyInfo = await CompanyData.findOne({ _id: req.body.Context });
@@ -157,9 +158,9 @@ export async function logIn(req, res) {
             ProfileImage: userInfoRes.ProfilePicture,
             Others: userInfoRes.Others,
             AccessLevel: userdata.AccessLevel,
-            AuthCode: userdata.AuthCode
+            AuthCode: userdata.AuthCode,
+            ConfirmEmail: userdata.EmailConfirmation
         };
-        console.log(user);
         const companyres = await CompanyData.findOne({ _id: req.body.Context });
 
         var token = jwt.sign({ user }, companyres.Secretkey);
@@ -176,5 +177,56 @@ export async function logIn(req, res) {
         response.successful = false;
 
         return res.status(500).json(response);
+    }
+}
+
+export async function confirmEmail(req, res) {
+    var result = new Result();
+    
+    try {
+        var id = req.params.id;
+        
+        if (id === null || id === undefined) {
+            result.successful = false;
+            result.model = null;
+            result.message = 'Id is required';  
+            
+            return res.status(400).json(result);
+        }
+        
+        var userLoginData = await UserLogin.findOne({ _id: id });
+        
+        userLoginData.EmailConfirmation = true;
+        
+        await UserLogin.findOneAndUpdate({ _id: id }, userLoginData, { Upsert: true, strict: false });
+        
+        var userInfoData = await UserInfo.findOne({ _id: userLoginData.UserInfo_Id });
+        
+        var user = {
+            Name: userInfoData.LastName + " " + userInfoData.FirstName,
+            UserId: userInfoData._id,
+            ProfilePicture: userInfoData.ProfilePicture,
+            AuthCode: userLoginData.AuthCode,
+            AccessLevel: userLoginData.AccessLevel,
+            ConfirmEmail: userLoginData.EmailConfirmation,
+            Others: userInfoData.Others
+        };
+        
+        const companyres = await CompanyData.findOne({ _id: userLoginData.Context });
+        
+        var token = jwt.sign({ user }, companyres.Secretkey);
+        
+        result.successful = true;
+        result.model = token;
+        result.message = 'Successfully verified user';
+        
+        return res.status(200).json(result);
+    }
+    catch (e) {
+        result.successful = false;
+        result.model = null;
+        result.message = e.errmsg;
+        
+        return res.status(500).json(result);
     }
 }
