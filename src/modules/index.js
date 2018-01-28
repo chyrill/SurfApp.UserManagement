@@ -1,5 +1,6 @@
 import userLoginRoutes from './usersLogin/userLogin.routes';
 import companyRoutes from './company/company.routes';
+import userInfoRoutes from './userInfo/userinfo.routes';
 
 export default app => {
     app.use(function(req, res, next) {
@@ -10,4 +11,5 @@ export default app => {
     });
     app.use('/api/v1/userLogin', userLoginRoutes);
     app.use('/api/v1/company', companyRoutes);
+    app.use('/api/v1/userInfo', userInfoRoutes);
 };

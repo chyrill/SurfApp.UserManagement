@@ -14,7 +14,7 @@ const UserInfoSchema = new Schema({
         type: String
     },
     ProfilePicture: {
-      type: String
+        type: String
     },
     Address1: {
         type: String,
@@ -53,11 +53,11 @@ const UserInfoSchema = new Schema({
     DateCreated: {
         type: Date
     },
-    Context:{
-      type: String,
+    Context: {
+        type: String,
     },
-    Others:{
-      type: Object
+    Others: {
+        type: Object
     },
     DateUpdated: {
         type: Date

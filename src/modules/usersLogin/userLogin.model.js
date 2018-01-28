@@ -27,23 +27,23 @@ const UserLoginSchema = new Schema({
         minLength: [6, 'Password minimum length is 6!']
     },
     AccessLevel: {
-      type: Number
+        type: Number
     },
     Context: {
         type: String
     },
     AuthCode: {
-      type: String
+        type: String
     },
     ExpirationDate: {
-      type: Date
+        type: Date
     },
     EmailConfirmation: {
         type: Boolean,
         default: false
     },
     DateCreated: {
-      type: Date
+        type: Date
     }
 
 });
