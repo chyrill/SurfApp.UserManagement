@@ -40,16 +40,11 @@ export async function signUp(req, res) {
         };
 
         const userLogin = await UserLogin.create(userLoginData);
-        var contactDetails = {
-            Name: userInfoData.LastName + ', ' + userInfoData.FirstName,
-            Email: userLogin.Email,
-            PhoneNumber: userInfoData.MobileNumber,
-            Context: req.body.Context,
-            UserId: userInfoCreateRes._id
-        };
+   
          const user = {
                 Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
                 UserId: userInfoCreateRes._id,
+                ContactId: userInfoCreateRes.ContactId,
                 ProfilePicture: userInfoCreateRes.ProfilePicture,
                 AuthCode: userLogin.AuthCode,
                 AccessLevel: userLogin.AccessLevel,
@@ -60,40 +55,12 @@ export async function signUp(req, res) {
         const companyInfo = await CompanyData.findOne({ _id: req.body.Context });
         const token = jwt.sign({ user }, companyInfo.Secretkey);
         
-        axios({
-            method: 'post',
-            url: 'http://localhost:3005/api/v1/recipient',
-            data: contactDetails
-        })
-            .then (response => {
-                var ContactId = response.data.model._id;
-                
-               axios({
-                   method: 'post',
-                   url: 'http://localhost:3005/api/v1/notify/sendSimple',
-                   data: {
-                       NotificationTemplateId: req.body.NotificationTemplateId,
-                       RecipientId: ContactId,
-                       Payload: {
-                           link: req.body.link + userLogin._id,
-                           name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName
-                       }
-                   },
-                   headers: {
-                       'Authorization' : 'Bearer ' + userLogin.AuthCode
-                   }
-                   })
-                   .then (response => {
-                   })
-                   .catch (err => {
-                   })
-            })
-            .catch (err => {
-            })
+         response.model = { 
+            Token: token,
+            UserLoginId: userLogin._id,
+            User: user
+         };
         
-         response.model = { Token: token,
-                              User: user,
-                              UserLoginId: userLogin._id};
         response.successful = true;
         response.message = "User is Created Successfully";
         return res.status(201).json(response);
@@ -271,3 +238,4 @@ export async function confirmEmail(req, res) {
         return res.status(500).json(result);
     }
 }
+

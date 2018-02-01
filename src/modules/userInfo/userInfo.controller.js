@@ -84,3 +84,33 @@ export async function setContactId(req, res) {
         return res.status(500).json(result);
     }
 }
+
+export async function checkexisting(req, res) {
+    var result = new Result();
+    
+    try {
+        
+        var userInfoRes = await UserInfo.find({$or: [{ FirstName: req.body.FirstName, LastName: req.body.LastName, Context: req.body.Context}, { Context: req.body.Context, Email: req.body.Email }]});
+        
+        if (userInfoRes.length > 0) {
+            result.successful = false;
+            result.model = null;
+            result.message = 'User already does exist';
+            
+            return res.status(400).json(result);
+        }
+        
+        result.successful = true;
+        result.model = null;
+        result.message = 'User can be add';
+        
+        return res.status(200).json(result);
+    }
+    catch (e) {
+        result.successful = false;
+        result.model = null;
+        result.message = e.errmsg;
+        
+        return res.status(500).json(result);
+    }
+}
