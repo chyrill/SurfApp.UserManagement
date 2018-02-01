@@ -58,3 +58,29 @@ export async function searchAll(req, res) {
         return res.status(500).json(result);
     }
 }
+
+export async function setContactId(req, res) {
+    var result = new Result();
+    
+    try {
+        var userInfoRes = await UserInfo.findOne({ _id: req.body.UserId });
+        console.log(req.body)
+        userInfoRes.ContactId = req.body.ContactId;
+        
+        await UserInfo.findOneAndUpdate({ _id: userInfoRes._id }, userInfoRes, { Upsert: true, strict: false });
+        
+        result.successful = true;
+        result.model = userInfoRes;
+        result.message = 'Successfully updated record';
+        
+        return res.status(200).json(result);
+    }
+    catch (e) {
+        console.log(e)
+        result.successful = false;
+        result.model = null;
+        result.message = e.errmsg;
+        
+        return res.status(500).json(result);
+    }
+}

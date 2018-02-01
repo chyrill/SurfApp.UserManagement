@@ -13,6 +13,9 @@ const UserInfoSchema = new Schema({
     MiddleName: {
         type: String
     },
+    ContactId: {
+        type: String
+    },
     ProfilePicture: {
         type: String
     },
@@ -47,8 +50,10 @@ const UserInfoSchema = new Schema({
 
     },
     PhoneNumber: {
-        type: String,
-        required: [true, 'Phone Number is required']
+        type: String
+    },
+    MobileNumber: {
+        type: String
     },
     DateCreated: {
         type: Date

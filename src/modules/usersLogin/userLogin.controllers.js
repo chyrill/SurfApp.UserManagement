@@ -6,6 +6,7 @@ import Uuid from 'uuid-lib';
 import { compareSync } from 'bcrypt-nodejs';
 import jwt from 'jsonwebtoken';
 import CompanyData from '../company/company.model';
+import axios from 'axios';
 
 
 export async function signUp(req, res) {
@@ -27,7 +28,7 @@ export async function signUp(req, res) {
         userInfoData.DateCreated = new Date();
 
         const userInfoCreateRes = await UserInfo.create(userInfoData);
-
+        
         var userLoginData = {
             Email: req.body.Email,
             Password: req.body.Password,
@@ -39,24 +40,63 @@ export async function signUp(req, res) {
         };
 
         const userLogin = await UserLogin.create(userLoginData);
-        const user = {
-            Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
-            UserId: userInfoCreateRes._id,
-            ProfilePicture: userInfoCreateRes.ProfilePicture,
-            AuthCode: userLogin.AuthCode,
-            AccessLevel: userLogin.AccessLevel,
-            Others: userInfoCreateRes.Others,
-            ConfirmEmail: false
+        var contactDetails = {
+            Name: userInfoData.LastName + ', ' + userInfoData.FirstName,
+            Email: userLogin.Email,
+            PhoneNumber: userInfoData.MobileNumber,
+            Context: req.body.Context,
+            UserId: userInfoCreateRes._id
         };
+         const user = {
+                Name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName,
+                UserId: userInfoCreateRes._id,
+                ProfilePicture: userInfoCreateRes.ProfilePicture,
+                AuthCode: userLogin.AuthCode,
+                AccessLevel: userLogin.AccessLevel,
+                Others: userInfoCreateRes.Others,
+                ConfirmEmail: false
+                };
 
         const companyInfo = await CompanyData.findOne({ _id: req.body.Context });
         const token = jwt.sign({ user }, companyInfo.Secretkey);
-
-        response.model = { Token: token };
+        
+        axios({
+            method: 'post',
+            url: 'http://localhost:3005/api/v1/recipient',
+            data: contactDetails
+        })
+            .then (response => {
+                var ContactId = response.data.model._id;
+                
+               axios({
+                   method: 'post',
+                   url: 'http://localhost:3005/api/v1/notify/sendSimple',
+                   data: {
+                       NotificationTemplateId: req.body.NotificationTemplateId,
+                       RecipientId: ContactId,
+                       Payload: {
+                           link: req.body.link + userLogin._id,
+                           name: userInfoCreateRes.LastName + " " + userInfoCreateRes.FirstName
+                       }
+                   },
+                   headers: {
+                       'Authorization' : 'Bearer ' + userLogin.AuthCode
+                   }
+                   })
+                   .then (response => {
+                   })
+                   .catch (err => {
+                   })
+            })
+            .catch (err => {
+            })
+        
+         response.model = { Token: token,
+                              User: user,
+                              UserLoginId: userLogin._id};
         response.successful = true;
         response.message = "User is Created Successfully";
         return res.status(201).json(response);
-
     } catch (e) {
         console.log(e);
 
@@ -156,6 +196,7 @@ export async function logIn(req, res) {
             Name: userInfoRes.LastName + ", " + userInfoRes.FirstName,
             UserId: userInfoRes._id,
             ProfileImage: userInfoRes.ProfilePicture,
+            ContactId: userInfoRes.ContactId,
             Others: userInfoRes.Others,
             AccessLevel: userdata.AccessLevel,
             AuthCode: userdata.AuthCode,
@@ -206,6 +247,7 @@ export async function confirmEmail(req, res) {
             Name: userInfoData.LastName + " " + userInfoData.FirstName,
             UserId: userInfoData._id,
             ProfileImage: userInfoData.ProfilePicture,
+            ContactId: userInfoData.ContactId,
             AuthCode: userLoginData.AuthCode,
             AccessLevel: userLoginData.AccessLevel,
             ConfirmEmail: userLoginData.EmailConfirmation,
