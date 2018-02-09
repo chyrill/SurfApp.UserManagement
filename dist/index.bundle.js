@@ -61,7 +61,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 10);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -84,6 +84,26 @@ module.exports = require("validator");
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+class Result {
+    constructor(model, message, successful) {
+        this.model = model;
+        this.message = message;
+        this.successful = successful;
+    }
+}
+
+exports.default = Result;
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -122,7 +142,7 @@ function envConfig(env) {
 exports.default = Object.assign({}, defaultConfig, envConfig(process.env.NODE_ENV));
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -131,18 +151,253 @@ exports.default = Object.assign({}, defaultConfig, envConfig(process.env.NODE_EN
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-class Result {
-    constructor(model, message, successful) {
-        this.model = model;
-        this.message = message;
-        this.successful = successful;
-    }
-}
 
-exports.default = Result;
+var _mongoose = __webpack_require__(1);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+var _validator = __webpack_require__(2);
+
+var _validator2 = _interopRequireDefault(_validator);
+
+var _bcryptNodejs = __webpack_require__(6);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const UserLoginSchema = new _mongoose.Schema({
+    UserInfo_Id: {
+        type: String,
+        required: [true]
+    },
+    Email: {
+        type: String,
+        unique: true,
+        required: [true, 'Email is required'],
+        trim: true,
+        index: false,
+        validate: {
+            validator(email) {
+                return _validator2.default.isEmail(email);
+            },
+            message: '{VALUE} is not a valid email!'
+        }
+    },
+    Password: {
+        type: String,
+        required: [true, 'Password is required'],
+        trim: true,
+        minLength: [6, 'Password minimum length is 6!']
+    },
+    AccessLevel: {
+        type: Number
+    },
+    Context: {
+        type: String
+    },
+    AuthCode: {
+        type: String
+    },
+    ExpirationDate: {
+        type: Date
+    },
+    EmailConfirmation: {
+        type: Boolean,
+        default: false
+    },
+    DateCreated: {
+        type: Date
+    }
+
+});
+
+UserLoginSchema.pre('save', function (next) {
+    if (this.isModified('Password')) {
+        this.Password = this._hashPassword(this.Password);
+        this.DateCreated = new Date();
+    }
+
+    return next();
+});
+
+UserLoginSchema.methods = {
+    _hashPassword(password) {
+        return (0, _bcryptNodejs.hashSync)(password);
+    }
+};
+
+exports.default = _mongoose2.default.model('UserLogin', UserLoginSchema);
 
 /***/ }),
-/* 5 */
+/* 6 */
+/***/ (function(module, exports) {
+
+module.exports = require("bcrypt-nodejs");
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _mongoose = __webpack_require__(1);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+var _validator = __webpack_require__(2);
+
+var _validator2 = _interopRequireDefault(_validator);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const UserInfoSchema = new _mongoose.Schema({
+    FirstName: {
+        type: String,
+        required: [true, 'First Name is required']
+    },
+    LastName: {
+        type: String,
+        required: [true, 'Last Name is required']
+    },
+    MiddleName: {
+        type: String
+    },
+    ContactId: {
+        type: String
+    },
+    ProfilePicture: {
+        type: String
+    },
+    Address1: {
+        type: String,
+        required: [true, 'Address 1 is required']
+    },
+    Address2: {
+        type: String
+    },
+    State: {
+        type: String,
+        required: [true, 'State is required']
+    },
+    City: {
+        type: String,
+        required: [true, 'City is required']
+    },
+    Country: {
+        type: String,
+        required: [true, 'Country is required']
+    },
+    Email: {
+        type: String,
+        required: [true, 'Email is required'],
+        validate: {
+            validator(email) {
+                return _validator2.default.isEmail(email);
+            },
+            message: '{VALUE} is not valid email'
+        }
+
+    },
+    PhoneNumber: {
+        type: String
+    },
+    MobileNumber: {
+        type: String
+    },
+    DateCreated: {
+        type: Date
+    },
+    Context: {
+        type: String
+    },
+    Others: {
+        type: Object
+    },
+    DateUpdated: {
+        type: Date
+    }
+});
+
+exports.default = _mongoose2.default.model('UserInfo', UserInfoSchema);
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+module.exports = require("uuid-lib");
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _mongoose = __webpack_require__(1);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+var _validator = __webpack_require__(2);
+
+var _validator2 = _interopRequireDefault(_validator);
+
+var _uuidLib = __webpack_require__(8);
+
+var _uuidLib2 = _interopRequireDefault(_uuidLib);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const CompanyDataSchema = new _mongoose.Schema({
+    Name: {
+        type: String,
+        required: [true, 'Company Name is required']
+    },
+    Address1: {
+        type: String,
+        required: [true, 'Address is required']
+    },
+    City: {
+        type: String,
+        required: [true, 'City is required']
+    },
+    State: {
+        type: String,
+        required: [true, 'State is required']
+    },
+    Country: {
+        type: String,
+        required: [true, 'Country is required']
+    },
+    ZipCode: {
+        type: String
+    },
+    Secretkey: {
+        type: String
+    },
+    AppContext: {
+        type: [String]
+    },
+    PhoneNumber: {
+        type: [String]
+    },
+    DateCreated: {
+        type: Date,
+        default: new Date()
+    }
+});
+
+exports.default = _mongoose2.default.model('CompanyData', CompanyDataSchema);
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -152,17 +407,17 @@ var _express = __webpack_require__(0);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(4);
 
 var _constants2 = _interopRequireDefault(_constants);
 
-__webpack_require__(6);
+__webpack_require__(11);
 
-var _middlewares = __webpack_require__(7);
+var _middlewares = __webpack_require__(12);
 
 var _middlewares2 = _interopRequireDefault(_middlewares);
 
-var _modules = __webpack_require__(12);
+var _modules = __webpack_require__(17);
 
 var _modules2 = _interopRequireDefault(_modules);
 
@@ -193,7 +448,7 @@ app.listen(_constants2.default.PORT, err => {
 });
 
 /***/ }),
-/* 6 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -203,7 +458,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(4);
 
 var _constants2 = _interopRequireDefault(_constants);
 
@@ -224,7 +479,7 @@ _mongoose2.default.connection.once('open', () => console.log('MongoDB running'))
 });
 
 /***/ }),
-/* 7 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -234,19 +489,19 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _morgan = __webpack_require__(8);
+var _morgan = __webpack_require__(13);
 
 var _morgan2 = _interopRequireDefault(_morgan);
 
-var _bodyParser = __webpack_require__(9);
+var _bodyParser = __webpack_require__(14);
 
 var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
-var _compression = __webpack_require__(10);
+var _compression = __webpack_require__(15);
 
 var _compression2 = _interopRequireDefault(_compression);
 
-var _helmet = __webpack_require__(11);
+var _helmet = __webpack_require__(16);
 
 var _helmet2 = _interopRequireDefault(_helmet);
 
@@ -269,31 +524,31 @@ exports.default = app => {
 };
 
 /***/ }),
-/* 8 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = require("morgan");
 
 /***/ }),
-/* 9 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("body-parser");
 
 /***/ }),
-/* 10 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("compression");
 
 /***/ }),
-/* 11 */
+/* 16 */
 /***/ (function(module, exports) {
 
 module.exports = require("helmet");
 
 /***/ }),
-/* 12 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -303,15 +558,15 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _userLogin = __webpack_require__(13);
+var _userLogin = __webpack_require__(18);
 
 var _userLogin2 = _interopRequireDefault(_userLogin);
 
-var _company = __webpack_require__(15);
+var _company = __webpack_require__(23);
 
 var _company2 = _interopRequireDefault(_company);
 
-var _userinfo = __webpack_require__(19);
+var _userinfo = __webpack_require__(25);
 
 var _userinfo2 = _interopRequireDefault(_userinfo);
 
@@ -330,7 +585,7 @@ exports.default = app => {
 };
 
 /***/ }),
-/* 13 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -342,7 +597,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _express = __webpack_require__(0);
 
-var _userLogin = __webpack_require__(14);
+var _userLogin = __webpack_require__(19);
 
 var userLoginController = _interopRequireWildcard(_userLogin);
 
@@ -358,7 +613,7 @@ routes.post('/:id', userLoginController.confirmEmail);
 exports.default = routes;
 
 /***/ }),
-/* 14 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -372,35 +627,35 @@ exports.authorize = authorize;
 exports.logIn = logIn;
 exports.confirmEmail = confirmEmail;
 
-var _userLogin = __webpack_require__(24);
+var _userLogin = __webpack_require__(5);
 
 var _userLogin2 = _interopRequireDefault(_userLogin);
 
-var _userInfo = __webpack_require__(21);
+var _userInfo = __webpack_require__(7);
 
 var _userInfo2 = _interopRequireDefault(_userInfo);
 
-var _result = __webpack_require__(4);
+var _result = __webpack_require__(3);
 
 var _result2 = _interopRequireDefault(_result);
 
-var _mapper = __webpack_require__(26);
+var _mapper = __webpack_require__(20);
 
-var _uuidLib = __webpack_require__(18);
+var _uuidLib = __webpack_require__(8);
 
 var _uuidLib2 = _interopRequireDefault(_uuidLib);
 
-var _bcryptNodejs = __webpack_require__(25);
+var _bcryptNodejs = __webpack_require__(6);
 
-var _jsonwebtoken = __webpack_require__(27);
+var _jsonwebtoken = __webpack_require__(21);
 
 var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
 
-var _company = __webpack_require__(17);
+var _company = __webpack_require__(9);
 
 var _company2 = _interopRequireDefault(_company);
 
-var _axios = __webpack_require__(28);
+var _axios = __webpack_require__(22);
 
 var _axios2 = _interopRequireDefault(_axios);
 
@@ -636,7 +891,45 @@ async function confirmEmail(req, res) {
 }
 
 /***/ }),
-/* 15 */
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Mapper = Mapper;
+function Map(model, source) {
+  var res = {};
+  for (let key in model) {
+    if (key != "_id" || key != "__v") {
+      res[key] = source[key];
+    }
+  }
+
+  return res;
+}
+
+function Mapper(model, source) {
+  return Map(model, source);
+}
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports) {
+
+module.exports = require("jsonwebtoken");
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports) {
+
+module.exports = require("axios");
+
+/***/ }),
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -648,7 +941,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _express = __webpack_require__(0);
 
-var _company = __webpack_require__(16);
+var _company = __webpack_require__(24);
 
 var companyController = _interopRequireWildcard(_company);
 
@@ -661,7 +954,7 @@ routes.post('/create', companyController.create);
 exports.default = routes;
 
 /***/ }),
-/* 16 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -672,11 +965,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.create = create;
 
-var _result = __webpack_require__(4);
+var _result = __webpack_require__(3);
 
 var _result2 = _interopRequireDefault(_result);
 
-var _company = __webpack_require__(17);
+var _company = __webpack_require__(9);
 
 var _company2 = _interopRequireDefault(_company);
 
@@ -715,79 +1008,7 @@ async function create(req, res) {
 }
 
 /***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _mongoose = __webpack_require__(1);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-var _validator = __webpack_require__(2);
-
-var _validator2 = _interopRequireDefault(_validator);
-
-var _uuidLib = __webpack_require__(18);
-
-var _uuidLib2 = _interopRequireDefault(_uuidLib);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const CompanyDataSchema = new _mongoose.Schema({
-    Name: {
-        type: String,
-        required: [true, 'Company Name is required']
-    },
-    Address1: {
-        type: String,
-        required: [true, 'Address is required']
-    },
-    City: {
-        type: String,
-        required: [true, 'City is required']
-    },
-    State: {
-        type: String,
-        required: [true, 'State is required']
-    },
-    Country: {
-        type: String,
-        required: [true, 'Country is required']
-    },
-    ZipCode: {
-        type: String
-    },
-    Secretkey: {
-        type: String
-    },
-    AppContext: {
-        type: [String]
-    },
-    PhoneNumber: {
-        type: [String]
-    },
-    DateCreated: {
-        type: Date,
-        default: new Date()
-    }
-});
-
-exports.default = _mongoose2.default.model('CompanyData', CompanyDataSchema);
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports) {
-
-module.exports = require("uuid-lib");
-
-/***/ }),
-/* 19 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -799,7 +1020,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _express = __webpack_require__(0);
 
-var _userinfo = __webpack_require__(20);
+var _userinfo = __webpack_require__(26);
 
 var UserInfoController = _interopRequireWildcard(_userinfo);
 
@@ -813,7 +1034,7 @@ routes.post('/exist', UserInfoController.checkexisting);
 exports.default = routes;
 
 /***/ }),
-/* 20 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -826,21 +1047,21 @@ exports.searchAll = searchAll;
 exports.setContactId = setContactId;
 exports.checkexisting = checkexisting;
 
-var _userInfo = __webpack_require__(21);
+var _userInfo = __webpack_require__(7);
 
 var _userInfo2 = _interopRequireDefault(_userInfo);
 
-var _result = __webpack_require__(4);
+var _result = __webpack_require__(3);
 
 var _result2 = _interopRequireDefault(_result);
 
-var _SearchResult = __webpack_require__(22);
+var _SearchResult = __webpack_require__(27);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _QueryFilters = __webpack_require__(23);
+var _QueryFilters = __webpack_require__(28);
 
-var _userLogin = __webpack_require__(24);
+var _userLogin = __webpack_require__(5);
 
 var _userLogin2 = _interopRequireDefault(_userLogin);
 
@@ -956,98 +1177,7 @@ async function checkexisting(req, res) {
 }
 
 /***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _mongoose = __webpack_require__(1);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-var _validator = __webpack_require__(2);
-
-var _validator2 = _interopRequireDefault(_validator);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const UserInfoSchema = new _mongoose.Schema({
-    FirstName: {
-        type: String,
-        required: [true, 'First Name is required']
-    },
-    LastName: {
-        type: String,
-        required: [true, 'Last Name is required']
-    },
-    MiddleName: {
-        type: String
-    },
-    ContactId: {
-        type: String
-    },
-    ProfilePicture: {
-        type: String
-    },
-    Address1: {
-        type: String,
-        required: [true, 'Address 1 is required']
-    },
-    Address2: {
-        type: String
-    },
-    State: {
-        type: String,
-        required: [true, 'State is required']
-    },
-    City: {
-        type: String,
-        required: [true, 'City is required']
-    },
-    Country: {
-        type: String,
-        required: [true, 'Country is required']
-    },
-    Email: {
-        type: String,
-        required: [true, 'Email is required'],
-        validate: {
-            validator(email) {
-                return _validator2.default.isEmail(email);
-            },
-            message: '{VALUE} is not valid email'
-        }
-
-    },
-    PhoneNumber: {
-        type: String
-    },
-    MobileNumber: {
-        type: String
-    },
-    DateCreated: {
-        type: Date
-    },
-    Context: {
-        type: String
-    },
-    Others: {
-        type: Object
-    },
-    DateUpdated: {
-        type: Date
-    }
-});
-
-exports.default = _mongoose2.default.model('UserInfo', UserInfoSchema);
-
-/***/ }),
-/* 22 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1069,7 +1199,7 @@ class SearchResult {
 exports.default = SearchResult;
 
 /***/ }),
-/* 23 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1103,136 +1233,6 @@ function QueryFilters(filters, context) {
   console.log(result);
   return result;
 };
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _mongoose = __webpack_require__(1);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-var _validator = __webpack_require__(2);
-
-var _validator2 = _interopRequireDefault(_validator);
-
-var _bcryptNodejs = __webpack_require__(25);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const UserLoginSchema = new _mongoose.Schema({
-    UserInfo_Id: {
-        type: String,
-        required: [true]
-    },
-    Email: {
-        type: String,
-        unique: true,
-        required: [true, 'Email is required'],
-        trim: true,
-        index: false,
-        validate: {
-            validator(email) {
-                return _validator2.default.isEmail(email);
-            },
-            message: '{VALUE} is not a valid email!'
-        }
-    },
-    Password: {
-        type: String,
-        required: [true, 'Password is required'],
-        trim: true,
-        minLength: [6, 'Password minimum length is 6!']
-    },
-    AccessLevel: {
-        type: Number
-    },
-    Context: {
-        type: String
-    },
-    AuthCode: {
-        type: String
-    },
-    ExpirationDate: {
-        type: Date
-    },
-    EmailConfirmation: {
-        type: Boolean,
-        default: false
-    },
-    DateCreated: {
-        type: Date
-    }
-
-});
-
-UserLoginSchema.pre('save', function (next) {
-    if (this.isModified('Password')) {
-        this.Password = this._hashPassword(this.Password);
-        this.DateCreated = new Date();
-    }
-
-    return next();
-});
-
-UserLoginSchema.methods = {
-    _hashPassword(password) {
-        return (0, _bcryptNodejs.hashSync)(password);
-    }
-};
-
-exports.default = _mongoose2.default.model('UserLogin', UserLoginSchema);
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports) {
-
-module.exports = require("bcrypt-nodejs");
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Mapper = Mapper;
-function Map(model, source) {
-  var res = {};
-  for (let key in model) {
-    if (key != "_id" || key != "__v") {
-      res[key] = source[key];
-    }
-  }
-
-  return res;
-}
-
-function Mapper(model, source) {
-  return Map(model, source);
-}
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports) {
-
-module.exports = require("jsonwebtoken");
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports) {
-
-module.exports = require("axios");
 
 /***/ })
 /******/ ]);
